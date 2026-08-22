@@ -24,5 +24,5 @@ class ProjectMember(Base):
     role = Column(String(10), nullable=False)
     joined_at = Column(DateTime, nullable=False)
 
-    user = relationship("User", back_populates="project_members")
-    project = relationship("Project", back_populates="project_members")
+    users = relationship("User", back_populates="project_members")
+    projects = relationship("Project", back_populates="project_members")
