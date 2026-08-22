@@ -1,12 +1,30 @@
 from pydantic import BaseModel, ConfigDict
 
 class CreateTask(BaseModel):
-    id: int
+    project_id: int
+    title: str
+    description: str
+    assignee_id: int
+    status: str
+    priority: str
+    due_date: str
 
 class UpdateTask(BaseModel):
-    name: str
+    project_id: int
+    title: str
+    description: str
+    assignee_id: int
+    status: str
+    priority: str
+    due_date: str
 
 class ResponseTask(BaseModel):
-    name: str
+    project_id: int
+    title: str
+    description: str
+    assignee_id: int
+    status: str
+    priority: str
+    due_date: str
 
     model_config = ConfigDict(from_attributes=True)

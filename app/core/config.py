@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Setting(BaseSettings):
     DB_URL: str
-    SERECT_KEY: str
+    SECRECT_KEY: str
 
     model_config = SettingsConfigDict(
         env_file=".env",
