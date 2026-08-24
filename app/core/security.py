@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 import bcrypt
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from jose import jwt, JWTError, ExpiredSignatureError
 from app.core.config import settings
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -23,11 +23,9 @@ def verify_password(password: str, hashed_password: str) -> bool:
 
     return bcrypt.checkpw(password_bytes, hashed_bytes)
 
-def create_access_token(user_id: int, role: str, expries_detal: timedelta):
-    current_time = datetime.utcnow()
-    expires_delta = timedelta(minutes=30)
-
-    expires_time = current_time + expires_delta
+def create_access_token(user_id: int, role: str, expries_detal: timedelta) -> str:
+    current_time = datetime.now(timezone.utc)
+    expires_time = current_time + expries_detal
 
     payload = {
         "sub": str(user_id),
@@ -37,15 +35,16 @@ def create_access_token(user_id: int, role: str, expries_detal: timedelta):
         "exp": int(expires_time.timestamp())
     }
 
-    return jwt.encode(payload=payload, key=settings.SECRECT_KEY, algorithm=settings.JWT_ALGORITHM)
+    return jwt.encode(claims=payload, key=settings.SECRECT_KEY, algorithm=settings.JWT_ALGORITHM)
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()), db: Session = Depends(get_db)):
-    token = credentials
+    token = credentials.credentials
+
     credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Không thể xác thực thông tin đăng nhập!")
 
     try:
         payload = jwt.decode(token, settings.SECRECT_KEY, settings.JWT_ALGORITHM)
-        user_id = payload.get("sub")
+        user_id = payload.get("user_id")
         if user_id is None:
             raise credentials_exception
     except ExpiredSignatureError:

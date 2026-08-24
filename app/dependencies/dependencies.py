@@ -7,7 +7,6 @@ class RoleChecker:
         self.allow_roles = allow_roles
 
     def __call__(self, current_user:User = Depends(get_current_user)):
-        if current_user.role.name not in self.allow_roles:
+        if current_user.role not in self.allow_roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Không có quyền truy cập!")
         return current_user
-        

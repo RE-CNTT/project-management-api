@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status, Request
 from sqlalchemy.orm import Session
-from app.schemas.user import CreateUser, ResponseUser
+from app.schemas.user import CreateUser, ResponseUser, Login
 from app.db.database import get_db
 from app.services.auth_service import register as register_service, login as login_service
 from app.core.response import standard_response
@@ -27,12 +27,17 @@ def register(request: Request, user: CreateUser, db: Session = Depends(get_db)):
     )
 
 @router.post("/login")
-def login(request: Request, email: str, password: str, db: Session = Depends(get_db)):
-    access_token = login_service(email, password, db)
+def login(request: Request, user: Login, db: Session = Depends(get_db)):
+    access_token = login_service(user.email, user.password, db)
+    data = {
+        "access_token": access_token,
+        "type": "Bearer"
+    }
+    
     return standard_response(
         status_code=status.HTTP_200_OK, 
-        data=access_token, 
-        error=None, 
+        data=data, 
+        error=None,
         message="Thành công!", 
         path=request.url.path,
     )

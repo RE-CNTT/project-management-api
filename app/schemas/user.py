@@ -1,5 +1,9 @@
 from pydantic import BaseModel, ConfigDict, Field
 
+class Login(BaseModel):
+    email: str
+    password: str
+
 class CreateUser(BaseModel):
     email: str = Field(...)
     full_name: str = Field(...)

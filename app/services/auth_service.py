@@ -4,6 +4,7 @@ from app.schemas.user import CreateUser
 from app.core.security import hash_password, verify_password, create_access_token
 from app.services.user_service import find_user_by_email
 from app.models.user import User
+from datetime import timedelta
 
 def register(user: CreateUser, db: Session):
     exist_email = find_user_by_email(user.email, db)
@@ -30,4 +31,4 @@ def login(email: str, password: str, db: Session):
     if not verify_password(password, exist_email.password_hash):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Email hoặc mật khẩu không đúng!")
 
-    return create_access_token(exist_email.id, exist_email.role, 3600)
+    return create_access_token(exist_email.id, exist_email.role, timedelta(seconds=3600))
