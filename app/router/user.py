@@ -24,6 +24,7 @@ def get_me(request: Request, current_user: User = Depends(get_current_user)):
         is_active=current_user.is_active,
         role=current_user.role
     )
+
     return standard_response(
         status_code=status.HTTP_200_OK,
         data=user,
@@ -31,3 +32,7 @@ def get_me(request: Request, current_user: User = Depends(get_current_user)):
         message="Thành công!",
         path=request.url.path
     )
+
+@router.get("/users", dependencies=[Depends(allow_admin_only)])
+def get_user(name: str | None = None, email: str|None= None):
+    pass

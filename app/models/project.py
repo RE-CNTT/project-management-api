@@ -13,7 +13,7 @@ class Project(Base):
     created_at = Column(DateTime, default = lambda: datetime.now(timezone.utc).isoformat(), nullable=False)
 
     owner = relationship("User", back_populates="projects")
-    project_members = relationship("ProjectMember", back_populates="projects")
+    project_members = relationship("ProjectMember", back_populates="project")
     tasks = relationship("Task", back_populates="project")
 
 class ProjectMember(Base):
@@ -25,4 +25,4 @@ class ProjectMember(Base):
     joined_at = Column(DateTime, nullable=False)
 
     users = relationship("User", back_populates="project_members")
-    projects = relationship("Project", back_populates="project_members")
+    project = relationship("Project", back_populates="project_members")

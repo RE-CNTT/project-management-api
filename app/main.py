@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from app.router.user import router as router_exception
+from app.router.user import router as router_user
 from app.router.auth import router as router_auth
+from app.router.project import router as router_project
 from app.db.database import Base, engine
 from app.models.user import User
 from app.models.task import Task
@@ -34,5 +35,6 @@ def general_exception_handler(request: Request, exc: Exception):
         content={"error": "Lỗi máy chủ!"}
     )
 
-app.include_router(router=router_exception)
+app.include_router(router=router_user)
 app.include_router(router=router_auth)
+app.include_router(router=router_project)

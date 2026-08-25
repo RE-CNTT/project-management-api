@@ -16,6 +16,10 @@ class UpdateUser(BaseModel):
     role: str
     is_active: bool
 
+class User(BaseModel):
+    email: str
+    full_name: str
+
 class ResponseUser(BaseModel):
     email: str
     full_name: str
