@@ -26,6 +26,7 @@ allow_admin_user = RoleChecker(["ADMIN", "USER"])
 def create_project(request: Request, project: CreateProject, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     project = create_project_with_owner(project, current_user.id, db) 
     new_project = ResponseProject(
+        id=project.id,
         name=project.name,
         description=project.description
     )

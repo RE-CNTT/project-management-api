@@ -28,3 +28,10 @@ class ResponseUser(BaseModel):
     is_active: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+class PaginatedUserResponse(BaseModel):
+    total_record: int = Field(..., example=100)
+    total_page: int = Field(..., example=10)
+    page: int = Field(..., example=1)
+    limit: int = Field(..., example=10)
+    result: list[ResponseUser]

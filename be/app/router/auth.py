@@ -12,6 +12,7 @@ def register(request: Request, user: CreateUser, db: Session = Depends(get_db)):
     new_user = register_service(user, db)
 
     user_response = ResponseUser(
+        id=new_user.id,
         email=new_user.email,
         full_name=new_user.full_name,
         is_active=new_user.is_active,
