@@ -21,6 +21,7 @@ class User(BaseModel):
     full_name: str
 
 class ResponseUser(BaseModel):
+    id: int
     email: str
     full_name: str
     role: str

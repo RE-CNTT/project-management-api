@@ -6,7 +6,7 @@ from app.schemas.project import (
     ResponseProjectDetail, 
     UpdateProject, 
     CreateProjectMember,
-    ProjectMember
+    MembersProject
 )
 from app.models.project import Project, ProjectMember
 from app.schemas.user import User
@@ -33,13 +33,14 @@ def create_project_with_owner(project: CreateProject, user_id: int, db: Session)
 
     return new_project
 
-def get_all_project(name: str, user_id: int, db: Session) -> list[ResponseProject]:
+def get_all_project(name: str, user_id: int, page: int, limit: int, db: Session) -> list[ResponseProject]:
+    total_record = db.query(Project).count()
     list_projects = []
     projects = db.query(Project).filter_by(owner_id=user_id)
     if name is not None:
         projects = projects.filter_by(name=name)
 
-    projects.all()
+    projects.offset((page - 1) * limit).limit(limit).all()
 
     for project in projects:
         resp_pj = ResponseProject(
@@ -49,7 +50,7 @@ def get_all_project(name: str, user_id: int, db: Session) -> list[ResponseProjec
         )
         list_projects.append(resp_pj)
 
-    return list_projects
+    return list_projects, (total_record + limit - 1) // limit, total_record
 
 def get_detail_project_by_member(project_id: int, user_id: int, db: Session) -> ResponseProjectDetail:
     project_detail = db.query(Project).filter_by(id=project_id).first()
@@ -155,21 +156,36 @@ def get_all_member(project_id:int, user_id: int, db: Session):
     if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project không tồn tại!")
 
-    is_member = db.query(ProjectMember).filter_by(project_id=project_id, user_id=user_id).first()
-    if is_member is None:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Không có quyền truy cập")
+    if project.owner_id != user_id:
+        is_member = db.query(ProjectMember).filter_by(project_id=project_id, user_id=user_id).first()
+        if is_member is None:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Không có quyền truy cập")
 
-    members = db.query(ProjectMember).filter_by(project_id=project_id, user_id=user_id).all()
-
-    list_members: list[ProjectMember] = []
-
+    members = db.query(ProjectMember).filter_by(project_id=project_id).all()
+    list_members: list[MembersProject] = []
     for m in members:
-        member = ProjectMember(
+        member = MembersProject(
             email=m.user.email,
             full_name=m.user.full_name,
             role=m.role
         )
+        
+        list_members.append(member)
 
-        list_members = list_members.append(member)
+    return list_members
 
-    print(list_members)
+def delete_member_in_project(project_id: int, user_id: int, owner_id: int, db: Session):
+    project = find_project_by_id(project_id, db)
+    if project is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project không tồn tại!")
+    if project.owner_id != owner_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Không có quyền truy cập!")
+
+    member_project = db.query(ProjectMember).filter_by(project_id=project_id, user_id=user_id).first()
+    if member_project is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Thành viên không có trong dự án!")
+
+    db.delete(member_project)
+    db.commit()
+
+    return None

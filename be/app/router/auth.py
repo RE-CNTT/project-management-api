@@ -7,7 +7,7 @@ from app.core.response import standard_response
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-@router.post("/register")
+@router.post("/register", name="Đăng ký")
 def register(request: Request, user: CreateUser, db: Session = Depends(get_db)):
     new_user = register_service(user, db)
 
@@ -26,7 +26,7 @@ def register(request: Request, user: CreateUser, db: Session = Depends(get_db)):
         path=request.url.path
     )
 
-@router.post("/login")
+@router.post("/login", name="Đăng nhập")
 def login(request: Request, user: Login, db: Session = Depends(get_db)):
     access_token = login_service(user.email, user.password, db)
     data = {

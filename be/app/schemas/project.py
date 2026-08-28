@@ -28,5 +28,5 @@ class ResponseProjectDetail(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
-class ProjectMember(User):
+class MembersProject(User):
     role: str
