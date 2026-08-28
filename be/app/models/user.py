@@ -15,5 +15,5 @@ class User(Base):
     created_at = Column(DateTime, default = lambda: datetime.now(timezone.utc).isoformat(), nullable=False)
 
     projects = relationship("Project", back_populates="owner")
-    project_members = relationship("ProjectMember", back_populates="users")
+    project_members = relationship("ProjectMember", back_populates="user")
     tasks = relationship("Task", back_populates="user")

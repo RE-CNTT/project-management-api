@@ -5,7 +5,7 @@ from app.db.database import get_db
 from app.services.auth_service import register as register_service, login as login_service
 from app.core.response import standard_response
 
-router = APIRouter(prefix="/auth")
+router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register")
 def register(request: Request, user: CreateUser, db: Session = Depends(get_db)):

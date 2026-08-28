@@ -22,7 +22,7 @@ class ProjectMember(Base):
     project_id = Column(Integer, ForeignKey("projects.id"), primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     role = Column(String(10), nullable=False)
-    joined_at = Column(DateTime, nullable=False)
+    joined_at = Column(DateTime, default = lambda: datetime.now(timezone.utc).isoformat(),nullable=False)
 
-    users = relationship("User", back_populates="project_members")
+    user = relationship("User", back_populates="project_members")
     project = relationship("Project", back_populates="project_members")

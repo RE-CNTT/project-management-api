@@ -5,7 +5,7 @@ from app.core.security import get_current_user
 from app.core.response import standard_response
 from app.schemas.user import ResponseUser
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter(prefix="/api/v1", tags=["Info"])
 
 allow_admin_only = RoleChecker(["ADMIN"])
 allow_admin_user = RoleChecker(["ADMIN", "USER"])
