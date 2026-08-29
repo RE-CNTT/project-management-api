@@ -1,12 +1,12 @@
-"use client";
-
-import { useParams } from "next/navigation";
 import { ProjectDetailView } from "@/features/projects/components/ProjectDetailView";
 
-export default function ProjectDetailPage() {
-  const params = useParams();
-  const rawId = params.id;
-  const projectId = Number(Array.isArray(rawId) ? rawId[0] : rawId);
+interface ProjectDetailPageProps {
+  params: Promise<{ id: string }>;
+}
 
-  return <ProjectDetailView projectId={projectId} />;
+export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
+  const resolvedParams = await params;
+  const parsedId = Number(resolvedParams.id);
+
+  return <ProjectDetailView projectId={parsedId} />;
 }

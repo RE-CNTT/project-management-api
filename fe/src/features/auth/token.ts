@@ -1,6 +1,6 @@
 const ACCESS_TOKEN_STORAGE_KEY = "access_token";
 
-export function getAccessToken() {
+export function getAccessToken(): string | null {
   if (typeof window === "undefined") {
     return null;
   }
@@ -8,10 +8,18 @@ export function getAccessToken() {
   return window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
 }
 
-export function saveAccessToken(token: string) {
+export function saveAccessToken(token: string): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
   window.localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, token);
 }
 
-export function clearAccessToken() {
+export function clearAccessToken(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
   window.localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
 }

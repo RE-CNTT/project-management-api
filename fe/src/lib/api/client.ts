@@ -1,9 +1,7 @@
 import { getApiBaseUrl } from "./config";
-import type { ApiResponse, ValidationErrorItem } from "@/types/api";
+import type { ApiResponse, QueryValue, ValidationErrorItem } from "@/types/api";
 
-type QueryValue = string | number | boolean | null | undefined;
-
-interface ApiRequestOptions {
+export interface ApiRequestOptions {
   body?: unknown;
   headers?: HeadersInit;
   method?: "GET" | "POST" | "PUT" | "DELETE";
@@ -14,12 +12,19 @@ interface ApiRequestOptions {
 export class ApiError extends Error {
   readonly payload: unknown;
   readonly statusCode: number;
+  readonly detailError: string | null;
 
-  constructor(message: string, statusCode: number, payload: unknown) {
+  constructor(
+    message: string,
+    statusCode: number,
+    payload: unknown,
+    detailError: string | null = null,
+  ) {
     super(message);
     this.name = "ApiError";
     this.statusCode = statusCode;
     this.payload = payload;
+    this.detailError = detailError;
   }
 }
 
@@ -49,10 +54,23 @@ export async function apiRequest<T>(
   const payload = await parsePayload(response);
 
   if (!response.ok) {
+    const detailError = extractDetailError(payload);
+    const primaryMessage = getErrorMessage(payload, `HTTP ${response.status}`);
+    const resolvedMessage = detailError || primaryMessage;
+
+    if (response.status === 401 && typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("auth:unauthorized", {
+          detail: { message: resolvedMessage },
+        }),
+      );
+    }
+
     throw new ApiError(
-      getErrorMessage(payload, `HTTP ${response.status}`),
+      resolvedMessage,
       response.status,
       payload,
+      detailError,
     );
   }
 
@@ -67,29 +85,66 @@ export async function apiData<T>(
   return response.data;
 }
 
-export function getApiErrorMessage(error: unknown) {
+export async function apiResponse<T>(
+  path: string,
+  options: ApiRequestOptions = {},
+): Promise<ApiResponse<T>> {
+  return apiRequest<ApiResponse<T>>(path, options);
+}
+
+export function getApiErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
-    return error.message;
+    return error.detailError || error.message;
   }
 
   if (error instanceof Error) {
     return error.message;
   }
 
-  return "Không thể xử lý request.";
+  return "Không thể xử lý yêu cầu.";
 }
 
-function buildUrl(path: string, query?: Record<string, QueryValue>) {
+export function extractDetailError(payload: unknown): string | null {
+  if (!isRecord(payload)) {
+    return null;
+  }
+
+  const error = payload.error;
+
+  if (typeof error === "string" && error.trim().length > 0) {
+    return error;
+  }
+
+  if (Array.isArray(error) && error.length > 0) {
+    const validationMessages = error
+      .map((item) => formatValidationError(item))
+      .filter(Boolean);
+
+    if (validationMessages.length > 0) {
+      return validationMessages.join("; ");
+    }
+  }
+
+  if (typeof payload.detail === "string" && payload.detail.trim().length > 0) {
+    return payload.detail;
+  }
+
+  return null;
+}
+
+function buildUrl(path: string, query?: Record<string, QueryValue>): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const url = new URL(`${getApiBaseUrl()}${normalizedPath}`);
 
-  Object.entries(query ?? {}).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === "") {
-      return;
-    }
+  if (query) {
+    Object.entries(query).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === "") {
+        return;
+      }
 
-    url.searchParams.set(key, String(value));
-  });
+      url.searchParams.set(key, String(value));
+    });
+  }
 
   return url.toString();
 }
@@ -112,44 +167,30 @@ async function parsePayload(response: Response) {
   }
 }
 
-function getErrorMessage(payload: unknown, fallback: string) {
+function getErrorMessage(payload: unknown, fallback: string): string {
   if (!isRecord(payload)) {
     return fallback;
   }
 
-  const error = payload.error;
-
-  if (typeof error === "string" && error.length > 0) {
-    return error;
-  }
-
-  if (Array.isArray(error)) {
-    const validationMessages = error
-      .map((item) => formatValidationError(item))
-      .filter(Boolean);
-
-    if (validationMessages.length > 0) {
-      return validationMessages.join("; ");
-    }
+  const detail = extractDetailError(payload);
+  if (detail) {
+    return detail;
   }
 
   if (typeof payload.message === "string" && payload.message.length > 0) {
     return payload.message;
   }
 
-  if (typeof payload.detail === "string" && payload.detail.length > 0) {
-    return payload.detail;
-  }
-
   return fallback;
 }
 
-function formatValidationError(item: unknown) {
+function formatValidationError(item: unknown): string {
   if (!isValidationErrorItem(item)) {
     return "";
   }
 
-  return `${item.loc.join(".")}: ${item.msg}`;
+  const field = item.loc.filter((segment) => segment !== "body").join(".");
+  return field ? `${field}: ${item.msg}` : item.msg;
 }
 
 function isValidationErrorItem(item: unknown): item is ValidationErrorItem {

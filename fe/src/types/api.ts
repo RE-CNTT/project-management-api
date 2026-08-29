@@ -1,3 +1,9 @@
+export type QueryValue = string | number | boolean | null | undefined;
+
+export interface QueryParams {
+  [key: string]: QueryValue;
+}
+
 export interface ApiResponse<T> {
   statusCode: number;
   message: string;
@@ -29,4 +35,15 @@ export interface PaginatedData<T> {
 
 export interface HealthResponse {
   status: "success";
+}
+
+export type ToastType = "success" | "error" | "info" | "warning";
+
+export interface ToastItem {
+  id: string;
+  type: ToastType;
+  title?: string;
+  message: string;
+  detail?: string;
+  duration?: number;
 }

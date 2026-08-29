@@ -1,4 +1,4 @@
-export function getApiBaseUrl() {
+export function getApiBaseUrl(): string {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   if (!baseUrl) {

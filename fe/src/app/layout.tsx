@@ -1,22 +1,21 @@
 import type { Metadata } from "next";
-import { AppHeader } from "@/components/common/AppHeader";
+import { AppLayoutShell } from "@/components/common/AppLayoutShell";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Project API Client",
-  description: "Next.js client consuming the FastAPI backend",
+  title: "ProjectHub - Enterprise Project Management CMS",
+  description: "Hệ thống Quản lý và Điều phối Dự án Doanh nghiệp với FastAPI và Next.js",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="vi">
       <body>
-        <AppHeader />
-        <main className="app-main">{children}</main>
+        <AppLayoutShell>{children}</AppLayoutShell>
       </body>
     </html>
   );

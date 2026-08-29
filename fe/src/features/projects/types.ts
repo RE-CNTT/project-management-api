@@ -1,4 +1,5 @@
 import type { PublicUser } from "@/features/auth/types";
+import type { QueryParams } from "@/types/api";
 
 export interface CreateProjectRequest {
   name: string;
@@ -32,7 +33,7 @@ export interface ProjectMember extends PublicUser {
   role: string;
 }
 
-export interface ProjectQueryParams {
+export interface ProjectQueryParams extends QueryParams {
   limit?: number;
   name?: string;
   page?: number;
